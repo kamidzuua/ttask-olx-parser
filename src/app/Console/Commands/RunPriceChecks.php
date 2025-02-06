@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\UpdateAdPrices;
 use App\Models\Ad;
 use App\Services\Olx\AdParser;
 use Illuminate\Console\Command;
@@ -23,16 +24,27 @@ class RunPriceChecks extends Command
      */
     protected $description = 'Command description';
 
+    private AdParser $parser;
+
+    private Collection $ads;
+
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        dd($this->getCollection());
+
     }
 
     private function getCollection(): Collection
     {
         return Ad::all();
+    }
+
+    private function onlyUniqueUrls(): Collection
+    {
+        return $this->ads
+            ->unique(fn (Ad $ad) => $ad->url)
+            ->map(fn (Ad $ad) => $ad->url);
     }
 }

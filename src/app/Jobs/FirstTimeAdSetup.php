@@ -16,16 +16,18 @@ class FirstTimeAdSetup implements ShouldQueue
 
     public const QUEUE_NAME = 'setups';
 
-    private Collection $ads;
+    private Ad $ad;
 
-    private AdParser $parser;
+    private Collection $updates;
+
 
     /**
      * Create a new job instance.
      */
-    public function __construct(Collection $ads)
+    public function __construct(Ad $ad, Collection $updates)
     {
-        $this->ads = $ads;
+        $this->ad = $ad;
+        $this->updates = $updates;
     }
 
     /**
@@ -33,35 +35,14 @@ class FirstTimeAdSetup implements ShouldQueue
      */
     public function handle(): void
     {
-        $this->parser = new AdParser();
+        $found = $this->updates->firstWhere(fn (array $piece) => $piece['url'] === $this->ad->url);
 
-        $parsedMap = $this->onlyUniqueUrls()->map(function (string $url) {
-            $adId = $this->parser->parseId($url);
-            $adPrice = $this->parser->getPrice($adId);
+        $this->ad->update([
+            'olx_id'        =>  $found['id'],
+            'last_price'    =>  $found['last_price']
+        ]);
 
-            return [
-              'id'          =>  $adId,
-              'last_price'  =>  $adPrice,
-              'url'     =>  $url
-            ];
-        });
+        (new SendSubscribeEmail($this->ad))->onQueue(SendSubscribeEmail::QUEUE_NAME);
 
-        $this->ads->each(function (Ad $ad) use ($parsedMap) {
-            $found = $parsedMap->firstWhere(fn (array $piece) => $piece['url'] === $ad->url);
-
-            $ad->update([
-                'olx_id'        =>  $found['id'],
-                'last_price'    =>  $found['last_price']
-            ]);
-
-            (new SendSubscribeEmail($ad))->onQueue(SendSubscribeEmail::QUEUE_NAME);
-        });
-    }
-
-    private function onlyUniqueUrls(): Collection
-    {
-        return $this->ads
-            ->unique(fn (Ad $ad) => $ad->url)
-            ->map(fn (Ad $ad) => $ad->url);
     }
 }
