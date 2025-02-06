@@ -8,5 +8,4 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-Schedule::command('olx:run-price-checks')->everyTenMinutes();
-Schedule::command('olx:get-missing-ids')->everyMinute();
+Schedule::command('olx:run-price-checks')->everyMinute();

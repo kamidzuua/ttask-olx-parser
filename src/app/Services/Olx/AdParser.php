@@ -24,7 +24,7 @@ class AdParser
         return $this->dusk->getId($url);
     }
 
-    public function getPrice(string $id): int
+    public function getPrice(string $id): array
     {
         return $this->api->getPrice($id);
     }

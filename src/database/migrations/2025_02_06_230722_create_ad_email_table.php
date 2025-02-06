@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ads', function (Blueprint $table) {
+        Schema::create('ad_email', function (Blueprint $table) {
             $table->id();
-            $table->string('url');
-            $table->string('olx_id')->nullable();
-            $table->integer('last_price')->nullable();
-            $table->string('currency')->nullable();
-            $table->timestamps();
+            $table->foreignId('email_id')->references('id')->on('emails');
+            $table->foreignId('ad_id')->references('id')->on('ads');
         });
     }
 
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ads');
+        Schema::dropIfExists('ad_email');
     }
 };

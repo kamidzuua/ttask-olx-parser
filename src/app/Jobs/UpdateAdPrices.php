@@ -8,7 +8,6 @@ use App\Models\Ad;
 use App\Services\Olx\AdParser;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Collection;
 
 class UpdateAdPrices implements ShouldQueue
 {
@@ -16,17 +15,16 @@ class UpdateAdPrices implements ShouldQueue
 
     public const QUEUE_NAME = 'parsers';
 
-    private Collection $ads;
+    private Ad $ad;
 
     private AdParser $parser;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(Collection $ads)
+    public function __construct(Ad $ad)
     {
-        $this->ads = $ads;
-        $this->parser = new AdParser();
+        $this->ad = $ad;
     }
 
     /**
@@ -34,15 +32,23 @@ class UpdateAdPrices implements ShouldQueue
      */
     public function handle(): void
     {
-        $this->ads->each(function (Ad $ad) {
-           $price = $this->parser->getPrice($ad->id);
-           if ($price != $ad->last_price) {
-               $ad->update([
-                   'last_price' => $price
-               ]);
+        $this->parser = new AdParser();
 
-               SendUpdateEmail::dispatch($ad)->onQueue('emails');
-           }
-        });
+        if (!$this->ad->olx_id) {
+            $this->ad->olx_id = $this->parser->parseId($this->ad->url);
+        }
+
+        $apiResponse = $this->parser->getPrice($this->ad->olx_id);
+        $price = $apiResponse['price'];
+        $currency = $apiResponse['currency'];
+
+        if ($price != $this->ad->last_price || $currency != $this->ad->currency) {
+            $this->ad->last_price = $price;
+            $this->ad->currency = $currency;
+
+            SendUpdateEmail::dispatch($this->ad, $this->ad->emails)->onQueue('emails');
+        }
+
+        $this->ad->save();
     }
 }

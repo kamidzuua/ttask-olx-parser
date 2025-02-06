@@ -17,13 +17,16 @@ class ApiService
         $this->client = new Client();
     }
 
-    public function getPrice(string $id): int
+    public function getPrice(string $id): array
     {
         $route = sprintf(self::DELIVERY_ROUTE, $id);
 
         $response = $this->makeRequest('get', $route);
 
-        return intval($response['product']['price']);
+        return [
+            'price' => intval($response['product']['price']),
+            'currency' => $response['product']['currency']
+            ];
     }
 
     private function makeRequest(string $method, string $route, array $headers = []): array

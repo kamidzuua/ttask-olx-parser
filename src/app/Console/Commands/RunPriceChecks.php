@@ -24,27 +24,19 @@ class RunPriceChecks extends Command
      */
     protected $description = 'Command description';
 
-    private AdParser $parser;
-
-    private Collection $ads;
-
     /**
      * Execute the console command.
      */
     public function handle()
     {
-
+        $this->getCollection()->each(function (Ad $ad) {
+           dispatch((new UpdateAdPrices($ad)))->onQueue(UpdateAdPrices::QUEUE_NAME);
+        });
     }
 
     private function getCollection(): Collection
     {
-        return Ad::all();
-    }
-
-    private function onlyUniqueUrls(): Collection
-    {
-        return $this->ads
-            ->unique(fn (Ad $ad) => $ad->url)
-            ->map(fn (Ad $ad) => $ad->url);
+        return Ad::with('emails')
+            ->get();
     }
 }
