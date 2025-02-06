@@ -19,7 +19,8 @@ RUN apk --no-cache add \
     libmcrypt-dev \
     oniguruma-dev \
     sqlite-dev \
-    bash
+    bash \
+    npm
 
 # Clear cache
 RUN rm -rf /var/cache/apk/*
@@ -34,5 +35,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Copy existing application directory contents
 COPY ./src .
+
+RUN chmod 777 storage/framework storage/logs
 
 CMD ["php-fpm"]
