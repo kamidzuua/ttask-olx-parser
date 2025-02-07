@@ -36,6 +36,12 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copy existing application directory contents
 COPY ./src .
 
-RUN chmod 777 storage/framework storage/logs
+RUN chmod 677 storage/framework storage/logs
 
-CMD ["php-fpm"]
+COPY ./php/crontab /etc/cron.d/laravel-cron
+
+RUN chmod 0644 /etc/cron.d/laravel-cron && crontab /etc/cron.d/laravel-cron
+
+RUN crond -b -l 2 -L /var/log/cron.log
+
+CMD ["sh", "-c", "crond -b -l 2 -L /var/log/cron.log && php-fpm"]
