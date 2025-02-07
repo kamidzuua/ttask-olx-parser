@@ -1,0 +1,20 @@
+<div>
+    <table>
+        <tr>
+            <td>URL</td>
+            <td>{{$ad->url}}</td>
+        </tr>
+        <tr>
+            <td>CURRENCY</td>
+            <td>{{$ad->currency}}</td>
+        </tr>
+        <tr>
+            <td>PRICE</td>
+            <td>{{$ad->last_price / 100}}</td>
+        </tr>
+        <tr>
+            <td>WHEN</td>
+            <td>{{$ad->updated_at}}</td>
+        </tr>
+    </table>
+</div>

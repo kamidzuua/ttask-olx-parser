@@ -19,14 +19,14 @@ class OlxController extends Controller
         /**
          * @var $ad Ad
          */
-        $ad = Ad::updateOrCreate([
+        $ad = Ad::firstOrCreate([
             'url' => $request->input('url'),
         ]);
 
         /**
          * @var $email Email
          */
-        $email = Email::updateOrCreate([
+        $email = Email::firstOrCreate([
             'email' => $request->input('email')
         ]);
 
